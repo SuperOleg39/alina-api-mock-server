@@ -21,3 +21,9 @@ We've included Swagger in this project to make it easy for you to interact with 
 - Open your browser and navigate to `http://localhost:4000/api-docs`.
 - You should now see the Swagger UI, which provides a user-friendly interface for exploring the server's API.
 - You can use Swagger to send requests to the server, and view the server's responses.
+
+## Models
+
+### Users
+
+`999999` is id of current application user.
