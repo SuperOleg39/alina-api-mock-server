@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import swaggerPlugin from "@fastify/swagger";
 import swaggerUiPlugin from "@fastify/swagger-ui";
+import { Repository } from "./repository.js";
 
 async function main() {
   const fastify = Fastify({
@@ -17,13 +18,11 @@ async function main() {
     $id: "user",
     type: "object",
     properties: {
-      id: {
-        id: "number",
-        name: "string",
-        surname: "string",
-        lastMessage: "string",
-        nameImg: "string",
-      },
+      id: { type: "number" },
+      name: { type: "string" },
+      surname: { type: "string" },
+      lastMessage: { type: "string" },
+      avatarImg: { type: "string" },
     },
   });
 
@@ -31,20 +30,21 @@ async function main() {
     $id: "message",
     type: "object",
     properties: {
-      id: {
-        id: "number",
-        owner: "number",
-        type: "string",
-        text: "string",
-        date: "string",
-        nameImg: "string",
-        files: {
-          type: "array",
-          items: "string",
+      id: { type: "number" },
+      author: { type: "number" },
+      text: { type: "string" },
+      date: { type: "string" },
+      attachment: {
+        type: "object",
+        properties: {
+          type: { type: "string" },
+          value: { type: "string" },
         },
       },
     },
   });
+
+  fastify.decorate("repository", new Repository());
 
   fastify.register(async function (fastify) {
     fastify.get(
@@ -60,8 +60,10 @@ async function main() {
           },
         },
       },
-      (request, reply) => {
-        reply.send([]);
+      async function (request, reply) {
+        const response = await this.repository.getContacts();
+
+        reply.send(response);
       }
     );
 
@@ -84,8 +86,11 @@ async function main() {
           },
         },
       },
-      (request, reply) => {
-        reply.send({});
+      async function (request, reply) {
+        const contactId = request.params.id;
+        const response = await this.repository.getContact(contactId);
+
+        reply.send(response);
       }
     );
 
@@ -94,10 +99,13 @@ async function main() {
       {
         schema: {
           description: "Get messages list by contact id",
-          properties: {
-            id: {
-              type: "number",
-              description: "user id",
+          params: {
+            type: "object",
+            properties: {
+              id: {
+                type: "number",
+                description: "user id",
+              },
             },
           },
           response: {
@@ -108,13 +116,51 @@ async function main() {
           },
         },
       },
-      (request, reply) => {
-        reply.send([]);
+      async function (request, reply) {
+        const contactId = request.params.id;
+        const response = await this.repository.getMessages(contactId);
+
+        reply.send(response);
       }
     );
   });
 
-  // @todo: send message
+  fastify.post(
+    "/messages/:id",
+    {
+      schema: {
+        description: "Send message for contact",
+        params: {
+          type: "object",
+          properties: {
+            id: {
+              type: "number",
+              description: "user id",
+            },
+          },
+        },
+        body: {
+          type: "object",
+          properties: {
+            text: { type: "string" },
+            date: { type: "string" },
+            attachment: { type: "string" },
+          },
+          required: ["text", "date"],
+        },
+        response: {
+          200: { $ref: "message#" },
+        },
+      },
+    },
+    async function (request, reply) {
+      const contactId = request.params.id;
+      const message = request.body;
+      const response = await this.repository.sendMessage(contactId, message);
+
+      reply.send(response);
+    }
+  );
 
   fastify.listen({ port: 4000 }, (err) => {
     if (err) {
