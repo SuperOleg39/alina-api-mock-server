@@ -142,7 +142,7 @@ const db = {
   },
 };
 
-export class Repository {
+class Repository {
   async getContacts() {
     return db.contacts.map((id) => db.contactsById[id]);
   }
@@ -176,3 +176,5 @@ export class Repository {
     return message;
   }
 }
+
+module.exports.Repository = Repository;
