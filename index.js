@@ -1,7 +1,10 @@
-import Fastify from "fastify";
-import swaggerPlugin from "@fastify/swagger";
-import swaggerUiPlugin from "@fastify/swagger-ui";
-import { Repository } from "./repository.js";
+const Fastify = require("fastify");
+const swaggerPlugin = require("@fastify/swagger");
+const swaggerUiPlugin = require("@fastify/swagger-ui");
+const { Repository } = require("./repository.js");
+
+const port = process.env.PORT || 3000;
+const host = ("RENDER" in process.env) ? `0.0.0.0` : `localhost`;
 
 async function main() {
   const fastify = Fastify({
@@ -162,7 +165,7 @@ async function main() {
     }
   );
 
-  fastify.listen({ port: 4000 }, (err) => {
+  fastify.listen({ host, port }, (err) => {
     if (err) {
       fastify.log.error(err);
       process.exit(1);
