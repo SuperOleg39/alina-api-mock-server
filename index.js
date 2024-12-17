@@ -1,4 +1,5 @@
 const Fastify = require("fastify");
+const cors = require('@fastify/cors');
 const swaggerPlugin = require("@fastify/swagger");
 const swaggerUiPlugin = require("@fastify/swagger-ui");
 const { Repository } = require("./repository.js");
@@ -10,6 +11,8 @@ async function main() {
   const fastify = Fastify({
     logger: true,
   });
+
+  await fastify.register(cors, {});
 
   await fastify.register(swaggerPlugin, {});
 
